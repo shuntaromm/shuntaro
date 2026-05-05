@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複数の意味 50 - 単語帳</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --accent-color: #e74c3c;
+        }
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            gap: 15px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .meaning-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .meaning {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .examples {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        .example-item {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        .blank {
+            display: inline-block;
+            min-width: 60px;
+            border-bottom: 2px solid var(--accent-color);
+            color: transparent;
+            text-align: center;
+            transition: color 0.3s;
+            font-weight: bold;
+        }
+        .card.revealed .blank {
+            color: var(--accent-color);
+        }
+        .instructions {
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>複数の意味 50</h1>
+    <p class="instructions">カードをタップすると下線部（赤字）が表示されます。</p>
+
+    <div class="container" id="cardContainer">
+        <!-- JavaScriptでカードを生成 -->
+    </div>
+
+    <script>
+        const data = [
+            // image.png データ
+            { word: "味", meaning: "体験して知った感じ・うまみ", ex1: "勝利の", ex2: "をしめる" },
+            { word: "足", meaning: "交通機関。移動に使うもの。", ex1: "の便がよい", ex2: "ストでがうばわれる" },
+            { word: "腕", meaning: "物事をする能力。技量", ex1: "料理のが上がる", ex2: "に覚えがある" },
+            { word: "手", meaning: "力。手間", ex1: "を貸す", ex2: "がかかる" },
+            { word: "顔", meaning: "社会的な体面。名誉", ex1: "に泥を塗る", ex2: "会社のをつぶす" },
+            { word: "口", meaning: "話す能力。言葉。物言い", ex1: "が達者な人", ex2: "べた" },
+            { word: "腹", meaning: "心。胸の内。気持ち", ex1: "自分のにしまう", ex2: "相手のを読む" },
+            { word: "身", meaning: "身分。地位", ex1: "の程知らず", ex2: "に余る光栄" },
+            { word: "空", meaning: "偽りの。ふりをする", ex1: "寝をする", ex2: "とぼける" },
+            { word: "流れ", meaning: "時勢。成り行き", ex1: "時のに乗る", ex2: "時を見る目がある" },
+            { word: "め", meaning: "物の接する箇所", ex1: "季節の変わり", ex2: "紐の結び" },
+            { word: "もの", meaning: "取り立てて言うほどのこと", ex1: "ともしない", ex2: "の数に入らない" },
+            { word: "あいだ", meaning: "物と物とに挟まれた部分", ex1: "人込みの", ex2: "雲のから見える" },
+            { word: "通り", meaning: "通行。行ったり来たりすること", ex1: "人が少ない", ex2: "風のが悪い" },
+            { word: "通る", meaning: "まんべんなくゆきわたる", ex1: "火が中まで", ex2: "組織の末端まで" },
+            { word: "通じる", meaning: "（相手に）つながる。届く", ex1: "道が駅に", ex2: "話が" },
+            { word: "ばかり", meaning: "いまにも〜しそうである", ex1: "こぼれん", ex2: "出かける" },
+            { word: "おさめる", meaning: "金や物を納入する", ex1: "税金を", ex2: "会費を" },
+            { word: "落ちる", meaning: "物事の程度や段階が下がる", ex1: "評判が", ex2: "味が" },
+            { word: "かかる", meaning: "働きかけが及ぶ", ex1: "圧力が", ex2: "迷惑が" },
+            { word: "きく", meaning: "効果や働きが現れる", ex1: "この薬は", ex2: "ブレーキが" },
+            { word: "きた", meaning: "だんだん〜になる", ex1: "暗くなって", ex2: "意味がわかって" },
+            { word: "たつ", meaning: "続いていたものを終わらせる", ex1: "国交を", ex2: "消息を" },
+            // image_2.png データ
+            { word: "つとめる", meaning: "努力する", ex1: "解決に", ex2: "弁明に" },
+            { word: "つまる", meaning: "困る、窮する", ex1: "返答に", ex2: "金に" },
+            { word: "出る", meaning: "出発する", ex1: "旅に", ex2: "船が" },
+            { word: "とる", meaning: "場所や時間などを必要とする", ex1: "大きくて場所を", ex2: "難しくて手間を" },
+            { word: "とれる", meaning: "好ましくない状態が消え去る", ex1: "疲れが", ex2: "成長して角が" },
+            { word: "流れる", meaning: "本来の経路などからそれる", ex1: "違う議題に", ex2: "他店へ客が" },
+            { word: "のぞむ", meaning: "願う。欲する", ex1: "ところだ", ex2: "合格を" },
+            { word: "のばす", meaning: "長くなる", ex1: "爪を長く", ex2: "ヘチマがつるを" },
+            { word: "入る", meaning: "外から内にやって来る", ex1: "珍品が手に", ex2: "耳に／目に" },
+            { word: "はかる", meaning: "うまく処理する", ex1: "解決を", ex2: "便宜を" },
+            { word: "走る", meaning: "ある方向に強く傾く", ex1: "感情に", ex2: "極端に／悪に" },
+            { word: "はらう", meaning: "取り去る。取り除く", ex1: "分母を", ex2: "垣根を" },
+            { word: "控える", meaning: "すぐ近くの場所で待機する", ex1: "後ろに", ex2: "舞台の袖に" },
+            { word: "あける", meaning: "閉じていたものを開く", ex1: "目を", ex2: "封を／鍵を" },
+            { word: "はる", meaning: "強く主張する", ex1: "意地を", ex2: "欲を" },
+            { word: "見る", meaning: "評価する、判断する", ex1: "事態を重く", ex2: "目を養う" },
+            { word: "もつ", meaning: "含む。備える", ex1: "重大な意義を", ex2: "手に職を" },
+            { word: "危ない", meaning: "不安定である", ex1: "手つき", ex2: "足下が" },
+            { word: "よい", meaning: "質や能力が優れている", ex1: "彼は頭が", ex2: "腕が医者" },
+            { word: "が", meaning: "気持ち・能力などの対象を示す", ex1: "別れつらい", ex2: "日本語できる" },
+            { word: "なり", meaning: "何かから選ばせる意味を表す", ex1: "電話手紙", ex2: "何と言いなさい" },
+            { word: "まい", meaning: "打ち消し・否定の意志を表す", ex1: "過去は問う", ex2: "失敗は繰り返す" },
+            { word: "あげる", meaning: "低い所から高い所にもっていく", ex1: "品物を棚に", ex2: "海から網を" },
+            { word: "ように", meaning: "同じような、似た状態を示す", ex1: "飛ぶ逃げる", ex2: "夏の暑い日" },
+            { word: "だ", meaning: "その状態にあることを示す", ex1: "今日は穏やか", ex2: "彼はとても立派" },
+            { word: "で", meaning: "〜という理由によって", ex1: "病気休みます", ex2: "受験の準備忙しい" },
+            { word: "幅", meaning: "ゆとり。余地。余裕", ex1: "をもたせる", ex2: "人間にができる" }
+        ];
+
+        const container = document.getElementById('cardContainer');
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // 下線部の前後を判定して表示
+            const renderEx = (text) => {
+                // 文末、文中、文頭のパターンを簡易的に処理
+                return text.includes(' ') ? text.replace(' ', `<span class="blank">${item.word}</span>`) : 
+                       text.startsWith(' ') ? `<span class="blank">${item.word}</span>` + text : 
+                       text + `<span class="blank">${item.word}</span>`;
+            };
+
+            card.innerHTML = `
+                <div class="meaning-label">共通する意味：</div>
+                <div class="meaning">${item.meaning}</div>
+                <div class="examples">
+                    <div class="example-item">① ${item.ex1}<span class="blank">${item.word}</span></div>
+                    <div class="example-item">② ${item.ex2}<span class="blank">${item.word}</span></div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                card.classList.toggle('revealed');
+            });
+            
+            container.appendChild(card);
+        });
+    </script>
+</body>
+</html>
