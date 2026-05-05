@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特訓・語彙マスター30</title>
+    <style>
+        :root {
+            --primary: #4a90e2;   /* メインカラー */
+            --accent: #ff5a5f;    /* 答えの色 */
+            --bg: #f8f9fa;        /* 背景色 */
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .progress {
+            font-size: 1.1rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .meaning-tag {
+            font-size: 0.85rem;
+            color: var(--primary);
+            background: #eef5ff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            align-self: center;
+        }
+
+        .meaning-text {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .sentence {
+            font-size: 1.4rem;
+            font-weight: bold;
+            line-height: 1.6;
+            color: #222;
+        }
+
+        .sentence span {
+            border-bottom: 3px solid #ddd;
+            color: transparent;
+            padding: 0 5px;
+        }
+
+        .answer-area {
+            margin-top: 25px;
+            min-height: 90px;
+        }
+
+        .answer-word {
+            font-size: 2.5rem;
+            color: var(--accent);
+            font-weight: bold;
+            display: none;
+        }
+
+        .answer-yomi {
+            font-size: 1rem;
+            color: #777;
+            display: block;
+            font-weight: normal;
+        }
+
+        .footer-btns {
+            margin-top: 25px;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-show { background: var(--primary); color: white; }
+        .btn-next { background: #2ecc71; color: white; display: none; }
+        button:active { transform: translateY(2px); box-shadow: none; }
+
+        .shuffle-notice {
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="progress" id="progress">1 / 30</div>
+    </div>
+
+    <div class="card">
+        <span class="meaning-tag">語句の意味</span>
+        <div class="meaning-text" id="meaning">---</div>
+        <div class="sentence" id="sentence">---</div>
+        
+        <div class="answer-area">
+            <div class="answer-word" id="answer">
+                <span class="answer-yomi" id="yomi">---</span>
+                <span id="word">---</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-btns">
+        <button class="btn-show" id="btn-show" onclick="showAnswer()">答えを表示</button>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">次の問題へ</button>
+        <div class="shuffle-notice">※ページを更新すると再びシャッフルされます</div>
+    </div>
+</div>
+
+<script>
+    const vocabularyData = [
+        {w:"不断", y:"ふだん", s:"□の決意で挑む", m:"決断力に乏しいこと。優柔不断"},
+        {w:"子飼い", y:"こがい", s:"□の社員を重用する", m:"未熟なときから育て上げること"},
+        {w:"粗漏", y:"そろう", s:"準備に□があった", m:"おおざっぱで手落ちがあること"},
+        {w:"粗製", y:"そせい", s:"□濫造（そせいらんぞう）", m:"つくり方が粗雑なこと"},
+        {w:"粗野", y:"そや", s:"□な振る舞いを慎む", m:"荒々しくて洗練されていないこと"},
+        {w:"稟議", y:"りんぎ", s:"□書を作成する", m:"関係者に案を回して承認を得ること"},
+        {w:"放漫", y:"ほうまん", s:"□な経営が続く", m:"しまりがなくいいかげんなこと"},
+        {w:"反駁", y:"はんばく", s:"他人の意見に□する", m:"他人に反対して論じ返すこと"},
+        {w:"弁駁", y:"べんばく", s:"相手の誤りを□する", m:"他人の誤りを論じて攻撃すること"},
+        {w:"嘱望", y:"しょくぼう", s:"将来を□される", m:"将来に望みをかけること"},
+        {w:"不精", y:"ぶしょう", s:"筆□で返事を書かない", m:"わがまま勝手に振る舞うこと"},
+        {w:"蚕食", y:"さんしょく", s:"市場を□する", m:"蚕が桑の葉を食うように、片っ端から他の領域を侵略すること"},
+        {w:"与る", y:"あずかる", s:"お褒めに□", m:"物事に関与する。恩恵や分け前を受ける"},
+        {w:"目算", y:"もくさん", s:"□が外れる", m:"もくろみ、計画"},
+        {w:"あげつらう", y:"あげつらう", s:"人の欠点を□", m:"欠点や短所などを大げさに言い立てる"},
+        {w:"かしずく", y:"かしずく", s:"主君に□", m:"人に仕えて、世話をする"},
+        {w:"物知り顔", y:"ものしりがお", s:"□で語る", m:"その物事について知っているような様子"},
+        {w:"利発", y:"りはつ", s:"□な少年", m:"頭が良く賢いこと"},
+        {w:"小利口", y:"こりこう", s:"□に立ち回る", m:"目先のことだけに気が付いて抜けめがないさま"},
+        {w:"半可通", y:"はんかつう", s:"□を振り回す", m:"中途半端な知識しかないのに通じているふりをすること"},
+        {w:"手をこまねく", y:"てをこまねく", s:"傍観して□", m:"何もせず傍観している"},
+        {w:"すげない", y:"すげない", s:"□返事をされる", m:"思いやりがない"},
+        {w:"はかばかしい", y:"はかばかしい", s:"進捗が□くない", m:"順調に進んでいるさま"},
+        {w:"かいがいしい", y:"かいがいしい", s:"□世話をする", m:"きびきびと働くさま"},
+        {w:"あまつさえ", y:"あまつさえ", s:"雨が降り□嵐になった", m:"そのうえに。おまけに"},
+        {w:"いみじくも", y:"いみじくも", s:"□言い当てる", m:"適切に。非常にたくみに"},
+        {w:"おもはゆい", y:"おもはゆい", s:"褒められて□", m:"照れくさい。きまりが悪い"},
+        {w:"心外", y:"しんがい", s:"疑われるとは□だ", m:"思いがけないこと。意外"},
+        {w:"拠所ない", y:"どころがない", s:"□事情がある", m:"そうするより仕方ない（どころがない）"},
+        {w:"如才ない", y:"じょさいない", s:"□挨拶をする", m:"気がきいていて抜かりない"}
+    ];
+
+    let quizList = [];
+    let currentIdx = 0;
+
+    function initQuiz() {
+        quizList = [...vocabularyData];
+        for (let i = quizList.length - 1; i > 0; i--) {
+            const r = Math.floor(Math.random() * (i + 1));
+            [quizList[i], quizList[r]] = [quizList[r], quizList[i]];
+        }
+        currentIdx = 0;
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const item = quizList[currentIdx];
+        document.getElementById('progress').innerText = `${currentIdx + 1} / ${quizList.length}`;
+        document.getElementById('meaning').innerText = item.m;
+        document.getElementById('sentence').innerHTML = item.s.replace("□", "<span>____</span>");
+        
+        document.getElementById('word').innerText = item.w;
+        document.getElementById('yomi').innerText = item.y;
+        
+        document.getElementById('answer').style.display = 'none';
+        document.getElementById('btn-show').style.display = 'block';
+        document.getElementById('btn-next').style.display = 'none';
+    }
+
+    function showAnswer() {
+        document.getElementById('answer').style.display = 'block';
+        document.getElementById('btn-show').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'block';
+        
+        const item = quizList[currentIdx];
+        document.getElementById('sentence').innerHTML = item.s.replace("□", `<span style="color:var(--accent); border-bottom:none;">${item.w}</span>`);
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < quizList.length) {
+            showQuestion();
+        } else {
+            alert("すべての問題を学習しました！もう一度最初から（シャッフルして）開始します。");
+            initQuiz();
+        }
+    }
+
+    initQuiz();
+</script>
+</body>
+</html>
